@@ -11,10 +11,16 @@ from plone.app.testing import SITE_OWNER_NAME
 from zope.annotation.interfaces import IAnnotations
 
 import os
-import sys
 import time
 import transaction
 import unittest
+
+try:
+    from zodb_s3blobs.storage import write_staged_marker  # noqa: F401
+except ImportError:
+    HAS_STAGED_MARKER = False
+else:
+    HAS_STAGED_MARKER = True
 
 
 class FakeS3Client:
@@ -169,8 +175,8 @@ class TestS3TUSUpload(unittest.TestCase):
         # Sanity: ANNOTATION_KEY is the right place
         self.assertIn(ANNOTATION_KEY, IAnnotations(self.folder))
 
-    @unittest.skipIf(
-        sys.version_info < (3, 12), "zodb-s3blobs needs Python 3.12 or later"
+    @unittest.skipUnless(
+        HAS_STAGED_MARKER, "needs a zodb-s3blobs with write_staged_marker()"
     )
     def test_process_blob_writes_marker_the_storage_accepts(self):
         from ZODB.blob import Blob
@@ -683,8 +689,8 @@ class TestS3Services(unittest.TestCase):
         self.folder._p_jar.sync()
         return dict(_container_uploads(self.folder) or {})
 
-    @unittest.skipIf(
-        sys.version_info < (3, 12), "zodb-s3blobs needs Python 3.12 or later"
+    @unittest.skipUnless(
+        HAS_STAGED_MARKER, "needs a zodb-s3blobs with write_staged_marker()"
     )
     def test_upload_in_two_chunks_creates_file_with_marker(self):
         from collective.tus.s3 import _LIFECYCLE_APPLIED
