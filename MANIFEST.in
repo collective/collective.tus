@@ -1,0 +1,8 @@
+include *.md
+include LICENSE
+include Makefile
+include .flake8
+include .editorconfig
+recursive-include src *.py *.xml *.zcml
+global-exclude *.pyc
+global-exclude .DS_Store

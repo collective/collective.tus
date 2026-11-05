@@ -1,0 +1,117 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="collective.tus"
+    >
+
+  <include package="plone.restapi" />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="collective.tus"
+      description="TUS uploads moved into the blob instead of copied, and upload termination"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      directory="profiles/default"
+      />
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="collective.tus (uninstall)"
+      description="Removes the collective.tus browser layer"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      directory="profiles/uninstall"
+      />
+
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="collective.tus-hiddenprofiles"
+      />
+
+  <adapter factory=".deserializer.NamedFieldDeserializer" />
+
+  <!-- The same registrations as plone.restapi's, for the add-on layer,
+       plus DELETE (termination). -->
+
+  <plone:service
+      method="OPTIONS"
+      factory=".services.UploadOptions"
+      for="Products.CMFCore.interfaces.IFolderish"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="POST"
+      factory=".services.UploadPost"
+      for="Products.CMFCore.interfaces.IFolderish"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="POST"
+      factory=".services.UploadPost"
+      for="Products.CMFCore.interfaces.IContentish"
+      permission="cmf.ModifyPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-replace"
+      />
+
+  <plone:service
+      method="HEAD"
+      factory=".services.UploadHead"
+      for="Products.CMFCore.interfaces.IContentish"
+      permission="zope2.View"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="HEAD"
+      factory=".services.UploadHead"
+      for="plone.restapi.bbb.IPloneSiteRoot"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="PATCH"
+      factory=".services.UploadPatch"
+      for="Products.CMFCore.interfaces.IContentish"
+      permission="zope2.View"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="PATCH"
+      factory=".services.UploadPatch"
+      for="plone.restapi.bbb.IPloneSiteRoot"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="DELETE"
+      factory=".services.UploadDelete"
+      for="Products.CMFCore.interfaces.IContentish"
+      permission="zope2.View"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+  <plone:service
+      method="DELETE"
+      factory=".services.UploadDelete"
+      for="plone.restapi.bbb.IPloneSiteRoot"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-upload"
+      />
+
+</configure>
