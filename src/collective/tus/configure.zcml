@@ -114,4 +114,22 @@
       name="@tus-upload"
       />
 
+  <!-- Direct-to-S3 uploads: the nginx auth_request endpoint. -->
+  <plone:service
+      method="GET"
+      factory=".s3.UploadAuthorize"
+      for="Products.CMFCore.interfaces.IContentish"
+      permission="zope2.View"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-authorize"
+      />
+  <plone:service
+      method="GET"
+      factory=".s3.UploadAuthorize"
+      for="plone.restapi.bbb.IPloneSiteRoot"
+      permission="cmf.AddPortalContent"
+      layer=".interfaces.ICollectiveTusLayer"
+      name="@tus-authorize"
+      />
+
 </configure>

@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Plone ${{ matrix.plone-version }}, plone.restapi ${{ matrix.restapi }}
+    name: Plone ${{ matrix.plone-version }}, plone.restapi ${{ matrix.restapi }}${{ matrix.extra && ', zodb-s3blobs' || '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,6 +21,11 @@ jobs:
             restapi: "10.2.0"
           - plone-version: "6.2.2"
             restapi: "10.0.4"
+          # S3 mode needs a zodb-s3blobs with write_staged_marker(), not
+          # released yet.
+          - plone-version: "6.0.15"
+            restapi: "9.15.7"
+            extra: "zodb-s3blobs @ git+https://github.com/pretagov/zodb-s3blobs@tus-uploads-s3"
 
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +39,7 @@ jobs:
       - name: Install package
         run: |
           pip install -e ".[test]" "plone.restapi[test]==${{ matrix.restapi }}"
+          if [ -n "${{ matrix.extra }}" ]; then pip install "${{ matrix.extra }}"; fi
           # Several Plone dependencies still import pkg_resources at runtime.
           pip install "setuptools<81"
 

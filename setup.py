@@ -59,6 +59,11 @@ setup(
             "plone.restapi[test]",
             "zope.testrunner",
         ],
+        # Direct-to-S3 uploads. Needs a zodb-s3blobs with write_staged_marker()
+        # and staged-key commits.
+        "s3": [
+            "zodb-s3blobs",
+        ],
         "lint": [
             "flake8",
             "black",

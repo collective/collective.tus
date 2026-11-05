@@ -46,6 +46,7 @@ class NamedFieldDeserializer(BaseNamedFieldDeserializer):
 
         value.process_blob(result._blob)
         # ``size`` may have been cached from the placeholder during
-        # validation. Set it to the upload's length.
+        # validation. Set it to the upload's length, which is also right when
+        # the blob file is not the uploaded bytes themselves.
         result.__dict__["size"] = value.length()
         return result
