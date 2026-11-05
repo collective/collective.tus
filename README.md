@@ -1,11 +1,10 @@
 # collective.tus
 
-TUS resumable uploads for [plone.restapi](https://github.com/plone/plone.restapi), with two changes to its own TUS support:
+TUS resumable uploads for [plone.restapi](https://github.com/plone/plone.restapi), with three changes to its own TUS support:
 
 - **The finished upload is moved into the blob instead of copied.** plone.restapi reads the uploaded file and writes it into a new blob, so every large upload is written to disk twice and the request holds the copy. Here the blob is created with a one-byte placeholder and the uploaded file is renamed into it after validation. If the upload directory and the blob directory are on different file systems, the file is copied once instead.
 - **Termination.** `DELETE @tus-upload/<uid>` cancels an upload and removes what was uploaded so far ([TUS termination extension](https://tus.io/protocols/resumable-upload#termination)). `OPTIONS` advertises `creation,expiration,termination`.
-
-It also cleans up expired uploads safely when several worker processes share the upload directory.
+- **Safe cleanup of expired uploads.** Several worker processes can share the upload directory and clean it up at the same time; a file another process has already removed no longer causes an error.
 
 The endpoints, headers and request flow are the same as plone.restapi's, so clients don't change. See [plone.restapi's TUS documentation](https://6.docs.plone.org/plone.restapi/docs/source/endpoints/tusupload.html).
 
@@ -32,7 +31,7 @@ Unfinished uploads expire after an hour of inactivity and are removed when a lat
 
 ## Compatibility
 
-Plone 6.0 and 6.1, with plone.restapi 9.15 or later, including 10.x. CI tests plone.restapi 9.15.7 on Plone 6.0, and 9.15.3 and 10.2.0 on Plone 6.1. The add-on subclasses plone.restapi's TUS classes, which are internal and could change in a minor release, so CI runs plone.restapi's own TUS tests against it for each supported version.
+Plone 6.0, 6.1 and 6.2, with plone.restapi 9.15 or later, including 10.x. CI tests plone.restapi 9.15.7 on Plone 6.0, 9.15.3 and 10.2.0 on Plone 6.1, and 10.0.4 on Plone 6.2. The add-on subclasses plone.restapi's TUS classes, which are internal and could change in a minor release, so CI runs plone.restapi's own TUS tests against it for each supported version.
 
 ## Development
 
@@ -40,6 +39,10 @@ Plone 6.0 and 6.1, with plone.restapi 9.15 or later, including 10.x. CI tests pl
 make install
 make test
 ```
+
+## Authors
+
+- Jon Pentland, PretaGov [instification]
 
 ## License
 

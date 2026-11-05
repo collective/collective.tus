@@ -20,6 +20,7 @@ setup(
         "Framework :: Plone :: Addon",
         "Framework :: Plone :: 6.0",
         "Framework :: Plone :: 6.1",
+        "Framework :: Plone :: 6.2",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.10",
@@ -27,8 +28,7 @@ setup(
         "Programming Language :: Python :: 3.12",
     ],
     keywords="plone restapi tus upload resumable",
-    author="Plone Collective",
-    author_email="collective@plone.org",
+    author="Jon Pentland, PretaGov [instification]",
     url="https://github.com/collective/collective.tus",
     project_urls={
         "Source": "https://github.com/collective/collective.tus",
