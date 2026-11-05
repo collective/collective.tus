@@ -6,6 +6,18 @@ import os
 import time
 
 
+class TUSUploadError(Exception):
+    """Raised by an upload's ``write()`` when a chunk can't be accepted.
+
+    The PATCH service turns it into a TUS error response.
+    """
+
+    def __init__(self, message, error_type="Bad Request", status=400):
+        super().__init__(message)
+        self.error_type = error_type
+        self.status = status
+
+
 class TUSUpload(restapi_tus.TUSUpload):
     """An upload kept on local disk, in ``TUS_TMP_FILE_DIR`` or
     ``CLIENT_HOME/tus-uploads``.
@@ -17,6 +29,15 @@ class TUSUpload(restapi_tus.TUSUpload):
     def initialize(self, metadata):
         super().initialize(metadata)
         self._metadata = metadata
+
+    def write(self, infile, offset=0, content_length=None):
+        """Write to the uploaded file at the given offset.
+
+        ``content_length`` is the PATCH request's Content-Length. Local-disk
+        uploads read the body until EOF and don't need it, but the argument
+        lets other upload classes use it.
+        """
+        super().write(infile, offset)
 
     def cleanup_expired(self):
         """Remove unfinished uploads that have expired.

@@ -236,6 +236,18 @@ class TestDeserializer(unittest.TestCase):
         self.assertEqual(value.filename, "f.txt")
         self.assertEqual(value.contentType, "text/plain")
 
+    def test_size_is_the_upload_length(self):
+        # An upload class can put something other than the uploaded bytes in
+        # the blob (a reference to them, say). The size must still be right.
+        class Marker(TUSUpload):
+            def process_blob(self, blob):
+                with open(blob._p_blob_uncommitted, "wb") as f:
+                    f.write(b"marker")
+
+        tus = self.upload(b"x" * 100, cls=Marker)
+        value = self.deserialize(NamedBlobFileField(), tus)
+        self.assertEqual(value.size, 100)
+
     def test_non_blob_field_is_copied_as_plone_restapi_does(self):
         tus = self.upload(b"hello")
         value = self.deserialize(NamedFileField(), tus)
@@ -267,6 +279,12 @@ class TestUpload(unittest.TestCase):
         tus = TUSUpload("myuid", {"length": 3})
         os.remove(tus.metadata_path)
         self.assertEqual(tus.metadata(), {"length": 3})
+
+    def test_write_accepts_content_length(self):
+        tus = TUSUpload("myuid", {"length": 3})
+        tus.write(BytesIO(b"abc"), 0, content_length=3)
+        self.assertTrue(tus.finished)
+        self.assertEqual(tus.offset(), 3)
 
     def test_cleanup_expired_removes_old_uploads(self):
         tus = TUSUpload("myuid")
