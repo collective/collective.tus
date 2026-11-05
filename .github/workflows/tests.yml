@@ -1,0 +1,69 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Plone ${{ matrix.plone-version }}, plone.restapi ${{ matrix.restapi }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - plone-version: "6.0.15"
+            restapi: "9.15.7"
+          - plone-version: "6.1.3"
+            restapi: "9.15.3"
+          - plone-version: "6.1.3"
+            restapi: "10.2.0"
+          - plone-version: "6.2.2"
+            restapi: "10.0.4"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Plone with Python
+        uses: plone/setup-plone@v2.0.0
+        with:
+          python-version: "3.12"
+          plone-version: ${{ matrix.plone-version }}
+
+      - name: Install package
+        run: |
+          pip install -e ".[test]" "plone.restapi[test]==${{ matrix.restapi }}"
+          # Several Plone dependencies still import pkg_resources at runtime.
+          pip install "setuptools<81"
+
+      - name: Run tests
+        run: python -m zope.testrunner --test-path=src -m collective.tus
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install flake8 black isort zpretty
+      - run: |
+          flake8 src/collective/tus
+          black --check src/collective/tus
+          isort --check-only src/collective/tus
+          zpretty --check $(find src/collective/tus -name '*.zcml' -o -name '*.xml')
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the sdist contents, build and check the distributions
+        run: |
+          pip install build check-manifest twine
+          check-manifest
+          python -m build
+          twine check --strict dist/*
